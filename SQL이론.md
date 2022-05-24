@@ -1,3 +1,6 @@
+# SQL 이론 파헤치기 
+
+
 MySQL은 가장 널리 사용되고 있는 관계형 데이터베이스 관리 시스템(RDBMS: Relational DBMS)
 특히 PHP와 함께 웹 개발에 자주 사용된다.
 
