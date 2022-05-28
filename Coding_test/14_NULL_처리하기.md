@@ -1,5 +1,5 @@
 # 14. NULL 처리하기
-![제목 없음](https://user-images.githubusercontent.com/86516594/170821029-0be7c59a-1267-41ae-a413-9bfad1ad0018.png)
+![제목 없음](https://user-images.githubusercontent.com/86516594/170821220-56c4ab76-cddf-4e5d-b3b3-75173e2cfa57.png)
 
 ```mysql
 SELECT ANIMAL_TYPE, CASE WHEN NAME IS NULL THEN 'No name' ELSE NAME END AS 'NAME', SEX_UPON_INTAKE
