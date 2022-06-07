@@ -44,7 +44,8 @@
 
 ## 3.2 MySQL을 이용한 데이터베이스 구축 절차
 
-![image-20220604165125853](/Users/choibyeonghwi/Library/Application Support/typora-user-images/image-20220604165125853.png)
+<img width="864" alt="image" src="https://user-images.githubusercontent.com/86516594/172370408-79cadd1d-14ac-41d5-8b21-1496c354d241.png">
+
 
 ## 3.3 테이블 외의 데이터베이스 개체의 활용
 
