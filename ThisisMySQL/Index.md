@@ -1,0 +1,53 @@
+![image-20220607185119388](/Users/choibyeonghwi/Library/Application Support/typora-user-images/image-20220607185119388.png)
+
+```mysql
+-- 실습5 인덱스를 간단히 사용해보자
+CREATE TABLE indexTBL (
+    first_name VARCHAR(14),
+    last_name VARCHAR(16),
+    hire_date DATE
+);
+    
+INSERT INTO indexTBL
+	SELECT first_name, last_name, hire_date
+    FROM employees.employees
+    LIMIT 500;
+    
+SELECT * FROM indexTBL;
+
+-- STEP 1
+SELECT *
+FROM indexTBL
+WHERE first_name = 'Mary';
+```
+
+```markdown
+전체 테이블 검색
+
+예를 들어 국어책에 부록이 없다고 가정하자(=인덱스가 없다고) 책의 내용 중에서 "대한민국"과 관련된 내용을 찾아야 한다면?
+인덱스가 없으니 당연히 책을 처음부터 끝까지 전체를 뒤져봐야 한다.(=테이블 전체를 검색해야 한다.)
+이것이 바로 'Full Table Scan'인 것이다.
+
+만약 대량의 데이터에 대해 검색을 진행한다면 > 많은 시간 및 시스템 과부화를 초래할 수 있다.
+```
+
+
+
+![image-20220607190230446](/Users/choibyeonghwi/Library/Application Support/typora-user-images/image-20220607190230446.png)
+
+```mysql
+-- STEP 2
+CREATE INDEX idx_indexTBL_firstname ON indexTBL(first_name); 
+/* 
+1. idx_indxTBL_firstname 이름의 인덱스를 생성함.
+2. indexTBL 테이블에 있는 first_name 열에 인덱스를 생성함.
+*/
+SELECT *
+FROM indexTBL
+WHERE first_name = 'Mary';
+```
+
+```
+인텍스를 설정하고 실행 계획을 확인해보니 'Non-Unique Key Lookup' 인덱스를 사용해서 찾아냈다는 의미가 된다.
+```
+
