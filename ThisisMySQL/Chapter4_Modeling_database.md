@@ -16,7 +16,7 @@
 
 ### 폭포수 모델
 
-![image-20220609141029076](C:\Users\user\AppData\Roaming\Typora\typora-user-images\image-20220609141029076.png)
+![image](https://user-images.githubusercontent.com/86516594/172770681-b69c088f-48ca-4c81-84a7-b2bbc0f02e1e.png)
 
 * 장점: 각 단계가 명확히 구분되어서 프로젝트의 진행 단계가 명확해지는 점
 * 단점: 다시 거슬러 올라가기는 어려운 것과 마찬가지, 문제점이 발생될 경우에는 다시 앞 단계로 거슬러 올라가기가 힘듦
@@ -32,7 +32,7 @@
 
 데이터베이스 모델링: 현 세계에서 사용되는 작업이나 사물들을 DBMS의 데이터베이스 개체로 옮기기 위한 과정이라고 말할 수 있음
 
-![KakaoTalk_20220609_141656775](C:\Users\user\Documents\카카오톡 받은 파일\KakaoTalk_20220609_141656775.jpg)
+![KakaoTalk_20220609_141656775](https://user-images.githubusercontent.com/86516594/172770642-ed6b6f7c-a011-4c27-8836-d9347b7e12fd.jpg)
 
 현실세계의 고객, 물건, 직원 등은 데이터베이스의 각각의 테이블이라는 개체로 변환된다. (일부는 테이블 외의 다른 개체로로도 변환되기도 함)
 
