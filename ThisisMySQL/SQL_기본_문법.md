@@ -275,3 +275,26 @@ GROUP BY userID;
 | STDEV()         | 표준편차를 구한다.                   |
 | VAR_SAMP()      | 분산을 구한다.                       |
 
+```mysql
+SELECT userID, AVG(amount) AS '평균 구매 개수'
+FROM buytbl
+GROUP BY userID;
+
+-- 이렇게 사용자 별 평균 구매 개수도 구할 수가 있다.
+```
+
+```mysql
+SELECT name, MAX(height), MIN(height)
+FROM usertbl
+GROUP BY name;
+
+-- 이럴 경우 name별 최대, 최소값이 모두 출력이 되므로 코드를 수정해야 한다.
+
+SELECT name, height
+FROM usertbl
+WHERE height = (SELECT MAX(height) FROM usertbl)
+	OR height = (SELECT MIN(height) FROM usertbl);
+	
+-- 이렇게 하면 키의 최대값을 가진 사용자와, 최소값을 가진 사용자를 동시에 출력할 수 있게 된다.
+```
+
