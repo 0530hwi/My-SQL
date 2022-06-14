@@ -194,3 +194,84 @@ FROM usertbl
 WHERE height IN (SELECT height FROM usertbl WHERE addr = '경남');
 ```
 
+
+
+## 3. 테이블을 복사하는 CREATE TABLE ... SELECT
+
+```mysql
+/* 형식
+CREATE TABLE 새로운테이블 (SELECT 복사할열 FROM 기존테이블 */
+```
+
+```mysql
+-- buytbl을 buytbl2로 복사하는 구문
+USE sqldb;
+CREATE TABLE buytbl2 (SELECT * FROM buytbl);
+SELECT * FROM buytbl2;
+
+-- 필요하다면 지정한 일부 열만 복사할 수도 있다.
+CREATE TABLE buytbl3 (SELECT userID, prodName FROM buytbl);
+SELECT * FROM buytbl;
+```
+
+> 그런데, `buytbl`은 Primary Key 및 Foreign Key가 지정되어 있다. Workbench의 [Nevigator]에서 확인해 보면 
+>
+> PK나 FK 등의 제약조건은 복사되지 않는 것을 알 수 있다.
+
+
+
+## 4. GROUP BY 및 HAVING 그리고 집계 함수
+
+```mysql
+/* 
+형식:
+SELECT select_expr
+	[FROM table_references]
+	[WHERE where_condition]
+	[GROUP BY {col_name | expr | position}]
+	[HAVING where_condition]
+	[ORDER BY {col_name | expr | postition}]
+*/
+```
+
+말 그대로 그룹을 묶어주는 역할을 하는 `GROUP BY`
+
+```mysql
+SELECT userID, amount 
+FROM buytbl
+ORDER BY userID;
+
+-- 결과를 보면 사용자별로 여러 번의 물건 구매가 이루어져, 각각의 행이 별도로 출력됨
+-- 합계를 낼 때 이렇게 손이나 전자계산기를 두드려서 계산한다면 MySQL을 사용할 이유가 없음.
+
+SELECT userID, SUM(amount)
+FROM buytbl
+GROUP BY userID;
+
+-- 이렇게 그룹을 묶어서 출력할 경우 userID별로 SUM(amount) 즉, amount의 합산한 값을 출력한다.
+```
+
+```mysql
+SELECT userID AS '사용자 아이디', SUM(amount) AS '총 구매 개수'
+FROM buytbl
+GROUP BY userID;
+
+-- 별칭을 사용해서 컬럼 이름을 변경할 수도 있다.
+
+SELECT userID AS '사용자 아이디', SUM(price*amount) AS '총 구매액'
+FROM buytbl
+GROUP BY userID;
+
+-- 구매액의 총합을 출력하기
+```
+
+| 함수명          | 설명                                 |
+| --------------- | ------------------------------------ |
+| AVG()           | 평균을 구한다.                       |
+| MIN()           | 최소값을 구한다.                     |
+| MAX()           | 최대값을 구한다.                     |
+| COUNT()         | 행의 개수를 센다.                    |
+| COUNT(DISTINCT) | 행의 개수를 센다(중복은 1개만 인정). |
+| STDEV()         | 표준편차를 구한다.                   |
+| VAR_SAMP()      | 분산을 구한다.                       |
+
