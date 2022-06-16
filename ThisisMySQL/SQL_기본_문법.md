@@ -298,3 +298,39 @@ WHERE height = (SELECT MAX(height) FROM usertbl)
 -- 이렇게 하면 키의 최대값을 가진 사용자와, 최소값을 가진 사용자를 동시에 출력할 수 있게 된다.
 ```
 
+### HAVING 절
+
+```mysql
+SELECT userID AS '사용자', SUM(price*amount) AS '총 구매액'
+FROM buytbl
+WHERE SUM(pirce*amount) > 1000
+GROUP BY userID;
+
+-- GROUP BY를 사용할 때 WHERE를 사용할 수가 없다.
+-- 왜냐면, 이미 그룹을 묶었기 때문에 그룹 마다의 계산을 진행할 수 없기 때문이다.
+```
+
+```mysql
+SELECT userID AS '사용자', SUM(price*amount) AS '총 구매액'
+FROM buytbl
+WHERE SUM(pirce*amount) > 1000
+GROUP BY userID;
+
+-- 이럴 때 사용하는 것이 바로 HAVING 이다.
+```
+
+### ROLLUP
+
+```mysql
+SELECT num, groupName, SUM(price*amount) AS '비용'
+FROM buytbl
+GROUP BY groupName, num WITH ROLLUP;
+-- 이런 식으로 사용하면 중간 합계(소합계)를 보여준다.
+
+
+SELECT num, groupName, SUM(price*amount) AS '비용'
+FROM buytbl
+GROUP BY groupName, num WITH ROLLUP;
+-- 소합계를 생략하고 싶으면 NUM을 빼면 된다.
+```
+
