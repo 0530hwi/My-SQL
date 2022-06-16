@@ -367,7 +367,7 @@ INSERT INTO testTbl1(id, userName) VALUES (2, '설현');
 INSERT INTO testTbl1(userName, age, id) VALUES ('하니', 26,  3);
 ```
 
-## 자동으로 증가하는 AUTO_INCERMENT
+### 자동으로 증가하는 AUTO_INCERMENT
 
 * 테이블의 속성이 AUTO_INCERMENT로 지정되어 있다면, INSERT에는 해당 열이 없다고 생각하고 입력하면 된다.
 
@@ -425,6 +425,136 @@ INSERT INTO testTbl1(userName, age, id) VALUES ('하니', 26,  3);
   INSERT INTO testTbl3 VALUES (NULL, '정연', 18);
   INSERT INTO testTbl3 VALUES (NULL, '모모', 19);
   SELECT * FROM testTbl3;
+  
+  /* 한꺼번에 INSERT 하기 
+  INSERT INTO 테이블 이름 VALUES (값1, 값2 ...), (값3, 값4 ...), (값5, 값6)... */
   ```
 
-  
+### 대량의 샘플 데이터 생성하기
+
+```mysql
+-- employees 데이터를 가져와서 테이블 생성하기
+CREATE TABLE testTbl4 (
+	id int,
+    Fname varchar(50),
+    Lname varchar(50)
+);
+INSERT INTO testTbl4
+	SELECT emp_no, first_name, last_name
+    FROM employees.employees;
+```
+
+## 2. 데이터의 수정: UPDATE
+
+기존에 입력되어 있는 값을 변경하기 위해서는 UPDATE문을 다음과 같은 형식으로 사용한다.
+
+```mysql
+UPDATE 테이블이름
+	SET 열1 = 값1, 열2 = 값2 ...
+    HWERE 조건;
+```
+
+* 사용법은 간단하지만 **`WHERE`절을 생략할 경우 테이블의 전체 행이 변경**된다.
+
+  ```mysql
+  UPDATE testTbl4
+  	SET Lname = '없음'
+      WHERE Fname = 'Kyoichi';
+      
+  -- 주의 WHERE 절을 사용하지 않을 경우 Lname이 모두 '없음'으로 저장된다.
+  ```
+
+  ```mysql
+  -- 가끔 전체 테이블의 내용을 변경하고 싶을 때 WHERE을 생략하는 경우도 있다.
+  -- 보통 단가가 인상 되었을 때 사용한다.
+  USE sqldb;
+  UPDATE buytbl SET price = price * 1.5;
+  ```
+
+## 3. 데이터의 삭제: DELETE FROM
+
+```mysql
+DELETE FROM 테이블이름 WHERE 조건;
+
+-- 만약, WHERE문이 생략되면 전체 데이터를 삭제한다.
+-- testTbl4 'Aamer' 사용자가 필요 없다면 다음과 같은 구문을 사용하면 된다.
+
+USE sqldb;
+DELETE FROM testTbl4 WHERE Fname = 'Aamer';
+
+-- 만약 228건의 'Aamer'를 모두 지우는 것이 아니라 'Aamer'중에서 상위 몇 건만 삭제하려면 LIMIT구문과 함께 사용한다.
+DELETE FROM testTbl4 WHERE Fname = 'Aamer' LIMIT 5;
+```
+
+```mysql
+-- 실습3. 대용량의 테이블을 삭제하자.
+USE sqldb;
+CREATE TABLE bigTbl1 (SELECT * FROM employees.employees);
+CREATE TABLE bigTbl2 (SELECT * FROM employees.employees);
+CREATE TABLE bigTbl3 (SELECT * FROM employees.employees);
+
+DELETE FROM bigTbl1; -- 시간이 제일 오래 걸림
+DROP TABLE bigTbl2;
+TRUNCATE TABLE bigTbl3;
+```
+
+* DML문인 `DELETE`는 트랜잭션 로그를 기록하는 작업 때문에 삭제가 오래 걸린다. 
+  수백 만 건 또는 수천 만 건의 데이터를 삭제할 경우에 한참동안 삭제를 할 수도 있다.
+
+* DDL문인 `DROP`문은 테이블 자체를 삭제한다. 그리고 DDL은 트랜잭션을 발생시키지 않는다고 했다. 
+  DDL문인 `TRUNCATE`문의 효과는 `DELETE`와 동일하지만 트랜잭션 로그를 기록하지 않아서 속도가 무척 빠르다.
+
+  > 그러므로, 대용량의 테이블 전체 내용을 삭제할 때는 테이블 자체가 필요 없을 경우에는 `DROP`으로 삭제하고
+  > 테이블 구조를 남겨놓고 싶다면 `TRUNCATE`를 사용해 삭제하는 것이 효율적이다.
+
+## 4. 조건부 데이터 입력, 변경
+
+기본 키가 중복된 데이터를 입력하면 어떻게 될까? 당연히 입력되지 않는다.
+
+하지만 100건을 입력하고자 하는데 첫 번째 한 건의 오류 때문에 나머지 99건도 입력되지 않는 것도 문제가 될 수 있다.
+
+MySQL은 오류가 발생해도 계속 진행하는 방법을 제공한다.
+
+```mysql
+-- 실습4. INSERT의 다양한 방식을 실습하자.
+
+-- STEP1.
+USE sqldb;
+CREATE TABLE memberTBL (
+	SELECT userID, name, addr
+    FROM usertbl LIMIT 3
+);
+ALTER TABLE memberTBL
+	ADD CONSTRAINT pk_memberTBL PRIMARY KEY (userID); -- PK를 지정함
+SELECT * FROM memberTBL;
+
+-- STEP2.
+-- 2-1. 데이터를 추가로 3건 입력해 보자. 그런데, 첫 번째 데이터에서 PK를 중복하는 실수를 했다.
+INSERT INTO memberTBL VALUES('BBK', '비비코', '미국'); -- 오류 발생
+INSERT INTO memberTBL VALUES('SJH', '서장훈', '서울');
+INSERT INTO memberTBL VALUES('HJY', '현주엽', '경기');
+SELECT * FROM memberTBL; -- 오류가 발생하여, 기존 데이터만 조회됨. (데이터 추가가 되지 않음.)
+
+-- 2-2. INSERT IGNORE문으로 바꿔서 다시 실행하자.
+INSERT IGNORE INTO memberTBL VALUES('BBK', '비비코', '미국');
+INSERT IGNORE INTO memberTBL VALUES('SJH', '서장훈', '서울');
+INSERT IGNORE INTO memberTBL VALUES('HJY', '현주엽', '경기');
+SELECT * FROM memberTBL; -- 첫 번째 데이터는 비록 오류 때문에 들어가지 않았지만, 2건은 추가로 입력되었다.
+-- INSERT IGNORE는 PK 중복이더라도 오류를 발생시키지 않고 무사히 넘어간다.
+
+-- STEP3.
+INSERT INTO memberTBL VALUES('BBK', '비비코', '미국')
+	ON DUPLICATE KEY UPDATE name='비비코', addr='미국';
+    
+INSERT INTO memberTBL VALUES('DJM', '동짜몽', '일본')
+	ON DUPLICATE KEY UPDATE name='동짜몽', addr='일본';
+    
+SELECT * FROM memberTBL;
+/* 
+첫 번째 행에서 BBK는 중복이 되었으므로 UPDATE문이 수행되었다.
+그리고 두 번째 입력한 DJM은 없으므로 일반적인 INSERT처럼 데이터가 입력되었다.
+결국, ON DUPLICATE UPDATE는 PK가 중복되지 않으면 일반 INSERT가 되는 것이고,
+PK가 중복되면 그 뒤의 UPDATE문이 수행된다.
+*/
+```
+
