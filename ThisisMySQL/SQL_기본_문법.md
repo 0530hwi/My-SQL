@@ -334,3 +334,97 @@ GROUP BY groupName, num WITH ROLLUP;
 -- 소합계를 생략하고 싶으면 NUM을 빼면 된다.
 ```
 
+
+
+# 데이터 변경을 위한 SQL 문
+
+## 1. 데이터의 삽입: INSERT
+
+``` mysql
+-- 기본 구문
+INSERT [INTO] 테이블[(열1, 열2, ..., )] VALUES (값1, 값2, ...)
+```
+
+`INSERT`문은 별로 어려울 것이 없고, 몇 가지만 주의하면 된다.
+
+우선 테이블 이름 다음에 나오는 열은 생략이 가능하다. 
+하지만, 생략할 경우에 VALUES 다음에 나오는 값들의 **순서 및 개수**가 테이블이 정의된 **열 순서 및 개수**와 **동일**해야 한다.
+
+```mysql
+CREATE TABLE testTbl1 (
+    id INT,
+    userName CHAR(3),
+    age INT
+);
+
+INSERT INTO testTbl1 VALUES (1, '홍길동', 25);
+
+-- 만약, 위의 예에서 id와 이름만을 입력하고 나이를 입력하고 싶지 않다면 다음과 같이 테이블 이름 뒤에 입력할 열의 목록을 나열해야 함.
+INSERT INTO testTbl1(id, userName) VALUES (2, '설현');
+
+-- 이 경우 생략한 age에는 NULL 값이 들어간다.
+-- 열의 순서를 바꿔서 입력하고 싶을 때는 꼭 열 이름을 입력할 순서에 맞춰 나열해 줘야 한다.
+INSERT INTO testTbl1(userName, age, id) VALUES ('하니', 26,  3);
+```
+
+## 자동으로 증가하는 AUTO_INCERMENT
+
+* 테이블의 속성이 AUTO_INCERMENT로 지정되어 있다면, INSERT에는 해당 열이 없다고 생각하고 입력하면 된다.
+
+* AUTO_INCREMENT는 자동으로 1부터 증가하는 값을 입력해준다.
+
+* **AUTO_INCREMENT**로 지정할 때는 꼭! `PRIMARY KEY`또는 `UNIQUE`로 지정해줘야 하며 데이터 형은 **숫자**만 사용할 수 있다.
+
+* NULL값을 입력하면 자동으로 값이 입력 된다.
+
+  ```mysql
+  CREATE TABLE testTbl2 (
+  	id int AUTO_INCREMENT PRIMARY KEY,
+      userName char(3),
+      age int
+  );
+  INSERT INTO testTbl2 VALUES (NULL, '지민', 25);
+  INSERT INTO testTbl2 VALUES (NULL, '유나', 22);
+  INSERT INTO testTbl2 VALUES (NULL, '유경', 21);
+  
+  SELECT * FROM testTbl2;
+  
+  -- 실행시키면 id에는 NULL을 입력했으나 자동으로 1부터 3까지 입력이 되어 있음.
+  ```
+
+* 계속 입력을 하다 보면 현재 어느 숫자까지 증가되었는지 확인할 필요도 있다.
+
+* `SELECT LAST_INSERT_ID();` 쿼리를 사용하면 마지막에 입력된 값을 보여준다.
+
+* `AUTO_INCREMENT` 입력값을 100부터 입력되도록 변경하고 싶다면 다음과 같이 수행하면 된다.
+
+  ```mysql
+  SELECT LAST_INSERT_ID(); -- 3을 출력한다. 왜냐면 마지막 id값이 3이기 때문이다.
+  
+  ALTER TABLE testTbl2 AUTO_INCREMENT=100; 
+  INSERT INTO testTbl2 VALUES (NULL, '찬미', 23);
+  SELECT * FROM testTbl2;
+  
+  -- 이렇게 되면 마지막 열에는 100, 찬미, 23의 값이 입력되게 된다.
+  ```
+
+* 증가값을 지정하려면 서버 변수인 `@@auto_increment_increment`변수를 지정시켜야 한다.
+
+  ```mysql
+  -- 다음 예제는 초기값을 1000으로 설정하고 증가값은 3으로 변경하는 예제이다.
+  
+  USE sqldb;
+  CREATE TABLE testTbl3 (
+  	id int AUTO_INCREMENT PRIMARY KEY,
+      userName char(3),
+      age int
+  );
+  ALTER TABLE testTbl3 AUTO_INCREMENT=1000;
+  SET @@auto_increment_increment=3;
+  INSERT INTO testTbl3 VALUES (NULL, '나연', 20);
+  INSERT INTO testTbl3 VALUES (NULL, '정연', 18);
+  INSERT INTO testTbl3 VALUES (NULL, '모모', 19);
+  SELECT * FROM testTbl3;
+  ```
+
+  
