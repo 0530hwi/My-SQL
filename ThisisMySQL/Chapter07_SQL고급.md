@@ -82,3 +82,53 @@ SELECT CAST('2022-06-18 20:13:29.123' AS DATETIME) AS 'DATETIME'; -- 2022-06-18 
 |  ⭐GEOMETRY  |    N/A    | 공간데이터 형식으로 선, 점 및 다각형 같은 공간 데이터 개체를 저장하고 조작 |
 |    ⭐JSON    |     8     |         JSON(JavaScript Object Notation) 문서를 저장         |
 
+#### `LONGTEXT, LONGBLOB`
+
+MySQL은 LOB(Large Object: 대량의 데이터)을 저장하기 위해서 위의 형식을 지원한다.
+
+예로 장편소설과 같은 큰 덱스트 파일이라면, 그 내용을 전부 `LONGTEXT`형식으로 지정된 하나의 컬럼에 넣을 수 있고,
+
+동영상 파일과 같은 큰 바이너리 파일이라면 그 내용을 전부 `LONGBLOB` 형식으로 지정된 하나의 컬럼에 넣을 수 있다.
+
+<영화테이블>
+
+| 영화id | 영화 제목    | 감독     | 주연배우    | 영화 대본(`LONGTEXT`) | 영화 동영상(`LONGBLOB`) |
+| ------ | ------------ | -------- | ----------- | --------------------- | ----------------------- |
+| 0001   | 쉰들러러스트 | 스필버그 | 리암 니슨   | ####                  | ####                    |
+| 0002   | 철수와 영희  | 김덕순   | 철수와 영희 | ####                  | ####                    |
+| 0003   | 사과         | 애플     | 스티븐 잡스 | ####                  | ####                    |
+
+### 7.1.2 변수의 사용
+
+```mysql
+SET @변수이름 = 변수의 값;		-- 변수의 선언 및 값 대입
+SELECT @변수이름;						-- 변수의 값 출력
+```
+
+```mysql
+-- 실습1. 변수의 사용 실습
+USE sqldb;
+
+SET @myVar1 = 5;
+SET @myVar2 = 3;
+SET @myVar3 = 4.25;
+SET @myVar4 = '가수 이름--> ';
+
+SELECT @myVar1;								-- 5
+SELECT @myVar2 + @myVar3;			-- 7.250000000000000000
+
+SELECT @myVar4, Name
+FROM usertbl
+WHERE height > 180; -- 가수이름--> 임재범
+
+-- STEP2. LIMIT에는 원칙적으로 변수를 사용할 수 없으나 PREPARE와 EXECUTE문을 활용하면 된다.
+SET @myVar1 = 3;
+PREPARE myQuery
+	FROM 'SELECT name, height FROM usertbl ORDER BY height LIMIT ?';
+EXECUTE myQuery USING @myVAR1;
+```
+
+* `LIMIT`는 `LIMIT 3`과 같이 직접 숫자를 넣어야 한다. `LIMIT @변수`형식으로 사용하면 오류가 발생한다.
+* `PREPARE 쿼리이름 FROM '쿼리문'`은 쿼리이름에 '쿼리문'을 준비만 해놓고 실행하지는 않는다.
+* `EXECUTE`를 만나는 순간에 실행되며 '쿼리문'에서 ?으로 처리해놓은 부분에 대입이 된다.
+
