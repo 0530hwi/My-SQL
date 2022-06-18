@@ -1,3 +1,5 @@
+[TOC]
+
 # SQL 기본 문법
 
 ```MYSQL
@@ -340,7 +342,7 @@ GROUP BY groupName, num WITH ROLLUP;
 
 ## 1. 데이터의 삽입: INSERT
 
-``` mysql
+``` mysql
 -- 기본 구문
 INSERT [INTO] 테이블[(열1, 열2, ..., )] VALUES (값1, 값2, ...)
 ```
@@ -557,4 +559,86 @@ SELECT * FROM memberTBL;
 PK가 중복되면 그 뒤의 UPDATE문이 수행된다.
 */
 ```
+
+## 5. WITH 절과 CTE
+
+`WITH`절은 CTE(Common Table Expression)를 표현하기 위한 구문으로 MySQL 8.0 이후부터 사용할 수 있다.
+
+* CTE는 비재귀적과 재귀적 두가지가 있다.
+
+### 5-1 비재귀적 CTE
+
+```mysql
+/* CTE의 형식
+WITH CTE_테이블이름(열 이름)
+AS
+(
+<쿼리문>
+)
+SELECT 열 이름 FROM CTE_테이블이름; 
+*/
+```
+
+```mysql
+USE sqldb;
+SELECT userid AS '사용자', SUM(price*amount) AS '총 구매액'
+FROM buyTBL 
+GROUP BY userid;
+-- 총 구매액을 사용자별로 나타내는 쿼리, 여기서 구매액이 많은 사용자 순서로 정렬하고 싶다면 ORDER BY를 추가해야 한다.
+-- SQL문이 더욱 복잡해 지는 것이다. 이러한 문제를 해결하기 위해 CTE를 사용해보자
+
+
+-- CTE 사용
+WITH abc(userid, total)
+AS
+(	SELECT userid, SUM(price*amount)
+	FROM buytbl
+  GROUP BY userid	)
+SELECT * FROM abc ORDER BY total DESC;
+
+/*
+1. 'FROM abc' 구문에서 abc는 실존하는 테이블이 아니며, WITH구문으로 만든 SELECT의 결과이다.
+2. 단, 여기서 'AS(SELECT ...)' 조회하는 열과 'WITH abc(...)'과 갯수가 일치해야 한다.
+*/
+
+-- CTE 다른 예 연습, 각 지역별 최고키의 평균을 구하는 CTE
+WITH CTE_userTBL(addr, maxHeight)
+AS
+(	SELECT addr, MAX(height)
+	FROM usertbl
+  GROUP BY addr	)
+SELECT AVG(maxHeight*1.0) AS '각 지역별 최고키의 평균' FROM CTE_userTBL;
+```
+
+1. `AS`안에 구문을 먼저 살펴보면 addr(지역)별로 그룹을 묶고, 각 키의 최댓값을 출력한다.
+2. `AS`안에 있는 구문을 CTE_userTBL이라는 테이블로 만들어준다.
+3. 그 테이블을 가져와 maxHeight에 1.0을 곱하고(실수로 만들어주는 작업) 평균을 출력한다.
+
+### 정리
+
+* CTE는 뷰와 그 용도는 비슷하지만 개선된 점이 많다. 
+
+* 뷰는 계속 존재해서 다른 구문에서도 사용할 수 있지만, CTE와 파생 테이블은 구문이 끝나면 같이 **소멸**된다.
+
+* 즉, `CTE_usertbl`은 다시 사용할 수 없다.
+
+* CTE는 다음 형식과 같은 중복 CTE가 허용된다.
+
+  ```mysql
+  WITH 
+  AAA (컬럼들)
+  AS (AAA의 쿼리문),
+  	BBB (컬럼들)
+  		AS (BBB의 쿼리문),
+  			CCC (컬럼들)
+  				AS (CCC의 쿼리문)
+  SELECT * FROM [AAA 또는 BBB 또는 CCC]
+  
+  -- 주의! CCC의 쿼리문에서는 AAA나 BBB를 참조할 수 있지만, AAA BBB의 쿼리문에서 CCC를 참조할 수 없다.
+  -- 아직 정의되지 않은 CTE를 미리 참조할 순 없다.
+  ```
+
+  
+
+  
 
