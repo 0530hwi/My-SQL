@@ -259,7 +259,181 @@ SELECT LENGTH('가나다'); -- 9
 
 * 문자열을 이어준다.
 
-  ```
+  ```MYSQL
+  SELECT CONCAT_WS('/', '2025', '01', '01'); -- 2025/01/01
   ```
 
-  
+##### `ELT(위치, 문자열1, 문자열2), FIELD(찾을 문자열, 문자열1, 문자열2), FIND_IN_SET(찾을 문자열, 문자열 리스트), INSTR(기준 문자열, 부분 문자열), LOCATE(부분 문자열, 기준 문자열)`
+
+* `ELT()`는 위치 번째에 해당하는 문자열을 반환한다.
+* `FIELD()`는 찾을 문자열의 위치를 찾아서 반환한다.
+* `FIND_IN_SET()`은 찾을 문자열을 문자열 리스트에서 찾아서 위치를 반환한다.
+* `INSTR()`는 기준 문자열에서 부분 문자열을 찾아서 그 시작 위치를 반환한다.
+* `LOCATE()`는 `INSTR()`와 동일하지만 파라미터의 순서가 반대로 되어 있다.
+
+```mysql
+SELECT ELT(2, '하나', '둘', '셋'), # 둘 
+FIELD('둘', '하나', '둘', '셋'), # 2
+FIND_IN_SET('둘', '하나,둘,셋'), # 2
+INSTR('하나둘셋', '둘'), # 3
+LOCATE('둘', '하나둘셋'); # 3
+```
+
+##### `FORMAT(숫자, 소수점 자릿수)`
+
+```mysql
+-- 숫자를 소수점 아래 자릿수까지 표현한다. 또한 1000단위마다 콤마(,)를 표시해 준다.
+SELECT FORMAT(123456.123456, 4); -- 123,456.1235
+```
+
+```mysql
+-- 2진수, 16진수, 8진수
+SELECT BIN(31), HEX(31), OCT(31);
+-- 각각 2진수 11111, 16진수 IF, 8진수 37을 반환함
+```
+
+##### `INSERT(기준 문자열, 위치, 길이, 삽입할 문자열)`
+
+````mysql
+# 기준 문자열의 위치부터 길이만큼을 지우고 삽입할 문자열을 끼워 넣는다.
+SELECT INSERT('abcdefghi', 3, 4, '@@@@'), INSERT('abcdefghi', 3, 2, '@@@@');
+# ab@@@@ghi, ab@@@@efghi
+````
+
+##### `LEFT(문자열, 길이), RIGHT(문자열, 길이)`
+
+```mysql
+# 왼쪽 또는 오른쪽에서 문자열의 길이 만큼 반환한다.
+SELECT LEFT('abcdefghi', 3), RIGHT('abcdefghi', 3);
+# abc, ghi
+```
+
+##### `UPPER(문자열), LOWER(문자열)`
+
+```MYSQL
+# 소문자 > 대문자, 대문자 > 소문자
+SELECT LOWER('abcdEFGH'), UPPER('abcdEFGH')
+# abcdefgh, ABCDEFGH
+# LOWER() = LCASE()
+# UPPER() = UCASE()
+```
+
+##### `LPAD(문자열, 길이, 채울 문자열), PRAD(문자열, 길이, 채울 문자열)`
+
+```mysql
+# 문자열을 길이만큼 늘린 후에, 빈 곳을 채울 문자열로 채운다.
+SELECT LPAD('이것이', 5, '##'), PRAD('이것이', 5, '##')
+# ##이것이, 이것이##
+```
+
+##### `LTRIM(문자열), RTRIM(문자열)`
+
+```mysql
+# 문자열의 왼쪽/오른쪽 공백을 제거한다. 중간의 공백은 제거되지 않는다.
+SELECT LTRIM('	이것이'), RTRIM('이것이 	');
+# 둘다 공백이 제거된 '이것이' 반환
+```
+
+##### `TRIM(문자열), TRIM(방향 자를_문자열 FROM 문자열)`
+
+```mysql
+# TRIM(문자열)은 문자열의 앞뒤 공백을 모두 없앤다.
+# TRIM(방향 자를_문자열 FROM 문자열)에서 방향은 LEADING(앞), BOTH(양쪽), TRAILING(뒤)가 나올 수 있다.
+SELECT TRIM('		이것이		'), TRIM(BOTH 'ㅋ', FROM 'ㅋㅋㅋ재밌어요.ㅋㅋㅋ');
+# '이것이', '재밌어요'
+```
+
+##### `REPEAT(문자열, 횟수)`
+
+```mysql
+SELECT REPEAT('이것이', 3);
+# '이것이이것이이것이'
+```
+
+##### `REPLACE(문자열, 원래 문자열, 바꿀 문자열)`
+
+```mysql
+SELECT REPLACE('이것이 MySQL이다', '이것이', 'This is');
+# This is MySQL이다
+```
+
+##### `REVERSE(문자열)`
+
+```mysql
+# 문자열을 거꾸로 만듦
+SELECT REVERSE('MySQL');
+# LQsyM
+```
+
+##### `SAPCE(길이)`
+
+```mysql
+# 길이 만큼의 공백을 반환한다.
+SELECT CONCAT('이것이', SPACE(10), 'MySQL이다');
+# 이것이          MySQL이다
+```
+
+##### `SUBSTRING(문자열, 시작위치, 길이) 또는 SUBSTRING(문자열 FROM 시작위치 FOR 길이)`
+
+```mysql
+# 시작 위치부터 길이만큼 문자를 반환한다. 길이가 생략되면 문자열의 끝까지 반환된다.
+
+SELECT SUBSTRIN('대한민국만세', 3, 2);
+# 민국
+# 동일한 함수: SUBSTRING(), SUBSTR(), MID()
+```
+
+##### `SUBSTRIN_IDNEX(문자열, 구분자, 횟수)`
+
+```mysql
+# 문자열에서 구분자가 왼쪽부터 횟수 번째 나오면 그 이후의 오른쪽은 버린다.
+# 횟수가 음수면 오른쪽부터 세고 왼쪽을 버린다.
+
+SELECT SUBSTRING_INDEX('cafe.namver.com', '.', 2), SUBSTRING_INDEX('cafe.naver.com', '.', -2);
+# cafe.naver, naver.com
+```
+
+#### 수학함수
+
+| 함수명                                                       | 설명                                                         |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| `ABS(숫자)`                                                  | 절대값을 계산                                                |
+| `ACOS, ASIN, ATAN, ATAN2, SIN, COS, TAN`                     | 삼각함수 계산                                                |
+| `CELING(숫자), FLOOR(숫자), ROUND(숫자)`                     | 올림, 내림, 반올림                                           |
+| `CONV(숫자, 원래 진수, 변활한 진수)`                         | 숫자를 원래 진수에서 변환할 진수로 계산                      |
+| `DEGREES(숫자), RADIANS(숫자), PI()`                         | 라디안 > 각도, 각도 > 라디안, 파이                           |
+| `EXP, LN, LOG, LOG(밑수, 숫자), LOG2, LOG10`                 | 지수, 로그 관련                                              |
+| `MOD(숫자1, 숫자) 또는 숫자1 % 숫자2 또는 숫자 1 MOD 숫자 2` | 모두 숫자1을 숫자2로 나눈 나머지 값                          |
+| `POW(숫자1, 숫자2), SQRT(숫자)`                              | 거듭제곱, 제곱근                                             |
+| `RAND()`<br /><br />`SELECT RAND(), FLOOR(1 + (RAND() * (7-1)) );` | 0이상 1미만의 실수를 구함. <br />만약 m <= 임의의 정수 < n을 구하고 싶다면<br />`FLOOR (m + RAND() * (n-m))`을 사용하면 됨 |
+| `SIGN`                                                       | 숫자가 양수, 0, 음수인지를 구함<br />결과는 1, 0, -1 셋 중에 하나를 반환 |
+| `TRUNCATE(숫자, 정수)`                                       | 숫자를 소수점 기준으로 정수 위치까지 구하고 나머지는 버린다. |
+
+#### 날짜 및 시간 함수
+
+##### `ADDDATE(날짜 , 차이), SUBDATE(날짜, 차이)`
+
+```mysql
+# 날짜를 기준으로 차이를 더하거나 뺀 날짜를 구한다.
+
+SELECT ADDDATE('2025-01-01', INTERVAL 31 DAY), ADDDATE('2025-01-01', INTERVAL 1 MONTH);
+SELECT SUBDATE('2025-01-01', INTERVAL 31 DAY), SUBDATE('2025-01-01', INTERVAL 1 MONTH);
+# 31일 전 후, 한달 전후 계산
+```
+
+##### `ADDTIME(날짜/시간, 시간), SUBDATE(날짜/시간, 시간)`
+
+* 위 함수와 동일한 매커니즘이다.
+
+##### `CURDATE(), CURTIME(), NOW(), SYSDATE()`
+
+* `CURDATE()`: 현재 연-월-일
+* `CURTIME()`: 현재 시:분:초
+* `NOW(), SYSDATE()`: 현재 연-월-일 시:분:초
+
+##### `YEAR, MONTH, DAY, HOUR, MINUTE, SCOND, MICOSECOND`
+
+* 현재 연, 월, 일 및 시, 분, 초 , 밀리초를 구함
+
+
+
