@@ -229,3 +229,37 @@ SELECT CAST('2020@12@12' AS DATE);
 
 #### 문자열 함수
 
+* 문자열 함수는 문자열을 조작한다. 활용도가 **아주 높으므로** 잘 알아두자!
+
+##### `ASCII(아스키 코드), CHAR(숫자)`
+
+* 문자의 아스키 코드값을 돌려주거나 숫자의 아스키 코드값에 해당하는 문자를 돌려준다.
+
+  ```mysql
+  SELECT ASCII('A'), CHAR(65);
+  ```
+
+##### `BIT_LENGTH(문자열), CHAR_LENGTH(문자열), LENGTH(문자열)`
+
+* 할당된 Bit 크기 또는 문자 크기를 반환한다. `CHAR_LENGTH()`는 문자의 개수를 반환하며 `LENGTH()`는 할당된 Byte수를 반환한다.
+
+```mysql
+SELECT BIT_LENGTH('abc') -- 24
+SELECT CHAR_LENGTH('abc') -- 3
+SELECT LENGTH('abc'); -- 3
+
+SELECT BIT_LENGTH('가나다'); -- 72
+SELECT CHAR_LENGTH('가나다'); -- 3
+SELECT LENGTH('가나다'); -- 9
+
+-- MySQL은 기본으로 UTF-8 코드를 사용하기 때문에 영문은 3Byte, 한글은 3x3 = 9Byte를 할당한다.
+```
+
+##### `CONCAT(문자열1, 문자열2), CONCAT_WS(구분자, 문자열1, 문자열2)`
+
+* 문자열을 이어준다.
+
+  ```
+  ```
+
+  
