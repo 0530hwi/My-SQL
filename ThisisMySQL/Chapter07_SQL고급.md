@@ -11,7 +11,7 @@
 
 #### 숫자 데이터 형식
 
-|             데이터 형식             | 바이트 수 |      숫자 범위       |                             설명                             |
+|            l데이터 형식             | 바이트 수 |      숫자 범위       |                             설명                             |
 | :---------------------------------: | :-------: | :------------------: | :----------------------------------------------------------: |
 |               BIT(N)                |    N/8    |                      |            1~64bit를 표현. b'0000' 형식으로 표현             |
 |               TINYINT               |     1     |       -128~127       |                             정수                             |
@@ -131,4 +131,101 @@ EXECUTE myQuery USING @myVAR1;
 * `LIMIT`는 `LIMIT 3`과 같이 직접 숫자를 넣어야 한다. `LIMIT @변수`형식으로 사용하면 오류가 발생한다.
 * `PREPARE 쿼리이름 FROM '쿼리문'`은 쿼리이름에 '쿼리문'을 준비만 해놓고 실행하지는 않는다.
 * `EXECUTE`를 만나는 순간에 실행되며 '쿼리문'에서 ?으로 처리해놓은 부분에 대입이 된다.
+
+### 7.1.3 데이터 형식과 형 변환
+
+* 데이터 형식과 관련된 함수는 자주 사용되므로 잘 기억하자.
+
+#### 데이터 형식 변환 함수
+
+```mysql
+형식:
+CAST ( expresstion AS 데이터형식 [ (길이) ])
+CONVERT ( expression, 데이터형식 [ (길이) ])
+```
+
+데이터 형식 중 사용 가능한 것들 `BINARY, CHAR, DATE, DATETIME, DECIMAL, JSON, SIGNED INTEGER, TIME, UNSIGNED INTERGER`등.
+
+```mysql
+USE sqldb;
+SELECT AVG(amount) AS '평균 구매 개수' FROM buytbl; -- 2.9167
+
+SELECT CAST(AVG(amount) AS SIGNED INTEGER) AS '평균 구매 개수'
+FROM buytbl;
+SELECT CONVERT(AVG(amount), SIGNED INTEGER) AS '평균 구매 개수' 
+FROM buytbl;
+-- 두 구문 모두 3을 출력함
+```
+
+```MYSQL
+SELECT CAST('2020$12$12' AS DATE);
+SELECT CAST('2020/12/12' AS DATE);
+SELECT CAST('2020%12%12' AS DATE);
+SELECT CAST('2020@12@12' AS DATE);
+-- 모두 2020-12-12를 출력함
+```
+
+#### 임시적인 형 변환
+
+* 명시적인 변환(Explicit conversion): `CAST(), CONVERT()`
+
+* 임시적인 변환 예)
+  ```mysql
+  -- 임시적인 형 변환
+  SELECT '100' + '200'; -- 문자와 문자를 더함(정수로 변환돼서 연산됨)
+  SELECT CONCAT('100', '200'); -- 문자와 문자를 연결(문자로 처리)
+  SELECT CONCAT(100, '200'); -- 정수와 문자를 연결(정수가 문자로 변환돼서 처리
+  SELECT 1 > '2mega'; -- 정수인 2로 변한되어서 비교
+  SELECT 3 > '2MEGA'; -- 정수인 2로 변환되어서 비교
+  SELECT 0 = 'mega2'; -- 문자는 0으로 변한됨
+  ```
+  
+
+### 7.1.4 MySQL 내장 함수
+
+#### 제어 흐름 함수
+
+* 제어 흐름 함수는 프로그램의 흐름을 제어한다
+
+##### `IF`(수식, 참, 거짓)
+
+* 수식이 참 또는 거짓인지 결과에 따라 2중 분기한다.
+
+  ```mysql
+  SELECT IF (100 > 200, '참이다', '거짓이다'); -- 거짓이다 출력
+  ```
+
+##### `IFNULL`(수식1, 수식2)
+
+* 수식1이 NULL이 아니면 수식1이 반환되고, 수식1이 NUL이면 수식2가 반환된다.
+
+  ```mysql
+  SELECT IFNULL(NULL, '널이군요'), IFNULL(100, '널이군요');
+  ```
+
+##### `NULLIF`(수식1, 수식2)
+
+* 수식1과 수식2가 같으면 NULL을 반환하고, 다르면 수식1을 반환한다.
+
+  ```MYSQL
+  SELECT NULLIF(100, 100), NULLIF(200, 100);
+  ```
+
+##### `CASE ~ WHEN ~ ELSE ~ END`
+
+* `CASE`는 내장 함수는 아니고 연산자(Operator)로 분류된다. 다중 분기에 사용될 수 있으므로 내장함수와 같이 알아두면 좋다.
+
+  ```mysql
+  SELECT CASE 10
+  			WHEN 1 THEN '일'
+        WHEN 5 THEN '오'
+  			WHEN 10 THEN '십'
+  			ELSE '모름'
+  	END AS 'CASE연습';
+  ```
+
+  `CASE`뒤의 값이 10이므로 세 번째 WHEN이 수행되어 '십'이 반환된다.
+  만약 해당하는 사항이 없다면 `ELSE`부분이 반환된다. 마지막 `END AS`뒤에는 출력될 열의 별칭을 써주면 된다.
+
+#### 문자열 함수
 
