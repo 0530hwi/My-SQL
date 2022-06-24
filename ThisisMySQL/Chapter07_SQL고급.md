@@ -596,3 +596,70 @@ WHERE EXISTS (
     WHERE U.userID = B.userID );
 ```
 
+##### 실습
+
+```mysql
+# 실습 4. 세 개의 테이블을 조인하자
+
+-- Step 1. 테이블 생성 및 데이터 입력
+USE sqldb;
+CREATE TABLE stdTbl (
+	stdName		VARCHAR(10) NOT NULL PRIMARY KEY,
+    addr		CHAR(4) NOT NULL
+);
+CREATE TABLE clubTbl (
+	clubName	VARCHAR(10) NOT NULL PRIMARY KEY,
+    roomNo		CHAR(4) NOT NULL
+);
+CREATE TABLE stdclubTbl (
+	num			int AUTO_INCREMENT NOT NULL PRIMARY KEY,
+    stdName		VARCHAR(10) NOT NULL,
+    clubName	VARCHAR(10) NOT NULL,
+    FOREIGN KEY(stdName) REFERENCES stdtbl(stdName),
+    FOREIGN KEY(clubName) REFERENCES clubtbl(clubName)
+);
+INSERT INTO stdtbl VALUES ('김범수', '경남'), ('성시경', '서울'), ('조용필', '경기'), ('은지원', '경북'), ('바비킴', '서울');
+INSERT INTO clubtbl VALUES ('수영', '101호'), ('바둑', '102호'), ('축구', '103호'), ('봉사', '104호');
+INSERT INTO stdclubtbl VALUES(NULL, '김범수', '바둑'), (NULL, '김범수', '축구'), (NULL, '조용필', '축구'),
+							 (NULL, '은지원', '축구'), (NULL, '은지원', '봉사'), (NULL, '바비킴', '봉사');
+                             
+-- Step 2.
+SELECT S.stdName, S.addr, C.clubName, C.roomNo
+FROM stdtbl S 
+		INNER JOIN stdclubtbl SC
+			ON S.stdName = SC.stdName
+		INNER JOIN clubtbl C
+			ON SC.clubName = C.clubName
+ORDER BY S.stdName;
+
+-- Step 3. 동아리 기준으로 가입한 학생 목록 출력하기
+SELECT C.clubName, C.roomNo, S.stdName, S.addr
+FROM stdtbl S
+	INNER JOIN stdclubtbl SC
+		ON SC.stdName = S.stdName
+	INNER JOIN clubtbl C
+		ON SC.clubName = C.clubName
+ORDER BY C.clubName;
+```
+
+#### 7.2.2 OUTER JOIN(외부 조인)
+
+* `OUTER JOIN`은 조인의 조건에 만족되지 않는 행까지도 포함시키는 것이다.
+
+```mysql
+USE sqldb;
+SELECT U.userID, U.name, B.prodName, U.addr, CONCAT(U.mobile1, U.mobile2) AS '연락처'
+FROM usertbl U
+	LEFT OUTER JOIN buytbl B
+		ON U.userID = B.userID
+ORDER BY U.userID;
+-- LEFT 기준에 있는 것은 모두 출력되어야 함
+
+USE sqldb;
+SELECT U.userID, U.name, B.prodName, U.addr, CONCAT(U.mobile1, U.mobile2) AS '연락처'
+FROM usertbl U
+	RIGHT OUTER JOIN buytbl B
+		ON U.userID = B.userID
+ORDER BY U.userID;
+```
+
