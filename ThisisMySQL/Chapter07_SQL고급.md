@@ -663,3 +663,238 @@ FROM usertbl U
 ORDER BY U.userID;
 ```
 
+```mysql
+USE sqldb;
+SELECT U.userID, U.name, B.prodName, U.addr, CONCAT(U.mobile1, U.mobile2) AS '연락처'
+FROM usertbl U
+	LEFT OUTER JOIN buytbl B
+		ON U.userID = B.userID
+ORDER BY U.userID;
+```
+
+##### 실습
+
+```mysql
+# 실습 5. LEFT/RIGHT/FULL OUTER JOIN
+
+-- Step1.
+USE sqldb;
+SELECT S.stdName, S.addr, C.clubName, C.roomNo
+FROM stdtbl S
+	LEFT OUTER JOIN stdclubtbl SC
+		ON S.stdName = SC.stdName
+	LEFT OUTER JOIN clubtbl C
+		ON SC.clubName = C.clubName
+ORDER BY S.stdName;
+
+-- Step2. 동아리를 기준으로 학생 출력, 가입 학생이 하나도 없는 동아리 출력
+SELECT C.clubName, C.roomNo, S.stdName, S.addr
+FROM stdtbl S
+	LEFT OUTER JOIN stdclubtbl SC
+		ON SC.stdName = S.stdName
+	RIGHT OUTER JOIN clubtbl C
+		ON SC.clubName = C.clubName
+ORDER BY C.clubName;
+
+-- Step3. 두 결과 합쳐보기
+SELECT S.stdName, S.addr, C.clubName, C.roomNo
+FROM stdtbl S
+	LEFT OUTER JOIN stdclubtbl SC
+		ON S.stdName = SC.stdName
+	LEFT OUTER JOIN clubtbl C
+		ON SC.clubName = C.clubName
+UNION
+SELECT S.stdName, S.addr, C.clubName, C.roomNo
+FROM stdtbl S
+	LEFT OUTER JOIN stdclubtbl SC
+		ON SC.stdName = S.stdName
+	RIGHT OUTER JOIN clubtbl C
+		ON SC.clubName = C.clubName;
+```
+
+#### 7.2.5 UNION / UNION ALL / NOT IN / IN
+
+```mysql
+SELECT 문장1
+	UNION[ALL]
+SELECT 문장2
+```
+
+조건
+
+1. SELECT 문장1, SELECT  문장2의 열의 개수가 같아야 함
+2. 데이터 형식도 갈 열단위로 같거나 서로 호환되는 데이터 형식이여야 함
+
+**`UNION`만 사용하면 중복된 열은 제거**, **`UNION ALL`을 사용하면 중복된 열까지 모두 출력됨.**
+
+```MYSQL
+-- UNION ALL
+SELECT stdName, addr
+FROM stdtbl
+	UNION ALL
+SELECT clubName, roomNo
+FROM clubtbl;
+
+-- NOT IN
+SELECT name, CONCAT(mobile1, mobile2) AS '전화번호'
+FROM usertbl
+WHERE name NOT IN (
+	SELECT name
+    FROM usertbl
+    WHERE mobile1 IS NULL
+);
+
+-- IN
+SELECT name, CONCAT(mobile1, mobile2) AS '전화번호'
+FROM usertbl
+WHERE name IN (
+	SELECT name
+    FROM usertbl
+    WHERE mobile1 is NULL
+);
+```
+
+
+
+### 7.3 SQL 프로그래밍
+
+```mysql
+DELIMITER $$
+CREATE PROCEDURE 스토어드 포르시저이름()
+BEGIN
+
+		이 부분에 SQL 프로그래밍 코딩
+
+END $$
+DELIMITER ;
+CALL 스토어드 프로시저이름();
+```
+
+**`DELIMITER $$ ~ END $$` **부분까지는 스토어드 프로시저 코딩할 부분을 묶어준다고 보면 됨
+
+`CREATE PROCEDURE` 안에서도 세미콜론이 종료 문자이므로 어디까지가 스토어드 프로시저인지 구별이 어렵다.
+
+그래서 `END $$`가 나올 때까지를 스토어드 프로시저로 인식하게 하는 것이다.
+
+그리고 다시 `DELIMITER;`로 종료 문자를 세미콜론으로 변경해놓아야 한다.
+
+#### 7.3.1 IF ELSE
+
+조건에 따라 분기한다. 한 문장 이상이 처리되어야 할 때는 `BEGIN.. END`와 함께 묶어줘야만 하며, 습관적으로 실행할 문장이
+
+한 문장이라도 `BEGIN.. END`로 묶어주는 것이 좋다.
+
+```mysql
+#형식:
+IF <부울 표현식> THEN
+	SQL문장들1..
+ESLE 
+	SQL문장들2..
+END IF;
+```
+
+부울 표현식 부분이 참이라면 문장1을, 거짓이면 문장2를 수행한다.
+
+```mysql
+# 간단한 예
+
+DROP PROCEDURE IF EXISTS ifProc; -- 기존에 만든 적이 있다면 삭제
+DELIMITER $$
+CREATE PROCEDURE ifProc()
+BEGIN
+	DECLARE var1 INT; -- var1 변수 선언
+    SET var1 = 100; -- 변수에 값 대입
+    
+    IF var1 = 100 THEN 
+		SELECT '100입니다';
+	ELSE
+		SELECT '100이 아닙니다';
+	END IF;
+END $$
+DELIMITER ;
+CALL ifProc();
+```
+
+```mysql
+DROP PROCEDURE IF EXISTS ifProc2; 
+USE employees;
+
+DELIMITER $$
+CREATE PROCEDURE ifProc2()
+BEGIN
+	DECLARE hireDATE DATE; -- 입사일
+	DECLARE curDATE DATE; -- 오늘
+	DECLARE days INT; -- 근무한 일수
+
+	SELECT hire_date INTO hireDate -- hire_date 열의 결과를 hireDATE에 대입
+	   FROM employees.employees
+	   WHERE emp_no = 10001;
+
+	SET curDATE = CURRENT_DATE(); -- 현재 날짜
+	SET days =  DATEDIFF(curDATE, hireDATE); -- 날짜의 차이, 일 단위
+
+	IF (days/365) >= 5 THEN -- 5년이 지났다면
+		  SELECT CONCAT('입사한지 ', days, '일이나 지났습니다. 축하합니다!');
+	ELSE
+		  SELECT '입사한지 ' + days + '일밖에 안되었네요. 열심히 일하세요.' ;
+	END IF;
+END $$
+DELIMITER ;
+CALL ifProc2();
+```
+
+#### 7.3.2 CASE
+
+```mysql
+DROP PROCEDURE IF EXISTS ifProc3;
+DELIMITER $$
+CREATE PROCEDURE ifProc3()
+BEGIN
+	DECLARE point INT;
+    DECLARE credit CHAR(1);
+    SET point = 77;
+    
+    IF point >= 90 THEN
+		SET credit = 'A';
+	ELSEIF point >= 80 THEN
+		SET credit = 'B';
+	ELSEIF point >= 70 THEN
+		SET credit = 'C';
+	ELSEIF point >= 60 THEN
+		SET credit = 'D';
+	ELSE
+		SET credit = 'F';
+	END IF;
+    SELECT CONCAT('취득점수==>', point), CONCAT('학점==>', credit);
+END $$
+DELIMITER ;
+CALL ifProc3();
+```
+
+```mysql
+DROP PROCEDURE IF EXISTS caseProc;
+DELIMITER $$
+CREATE PROCEDURE caseProc()
+BEGIN
+	DECLARE point INT;
+    DECLARE credit CHAR(1);
+    SET point = 77;
+    
+    CASE
+			WHEN point >= 90 THEN
+				SET credit = 'A';
+			WHEN point >= 80 THEN
+				SET credit = 'B';
+			WHEN point >= 70 THEN
+				SET credit = 'C';
+			WHEN point >= 60 THEN
+				SET credit = 'D';
+			ELSE
+				SET credit = 'F';
+	END CASE;
+    SELECT CONCAT('취득점수==> ', point), CONCAT('학점==> ', credit);
+END $$
+DELIMITER ;
+CALL caseProc();
+```
+
