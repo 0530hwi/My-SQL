@@ -533,3 +533,66 @@ GROUP BY season
 ORDER BY season;
 ```
 
+### 7.2 조인
+
+* 조인(Join): 두 개 이상의 테이블을 서로 묶어서 하나의 결과 집합으로 만들어 내는 것을 말한다.
+
+데이터 베이스의 테이블은 중복과 공간 낭비를 피하고 데이터의 무결성을 위해서 여러 개의 테이블로 분리하여 저장한다.
+그 중에서 간단하지만 가장 많이 사용되는 보편적인 관계가 sqldb의 usertbl <> buytbl 관계인 '1대다' 관계이다.
+
+만약, 구매 테이블의 아이디 열을 회원 테이블과 동일하게 **Primary Key**로 지정한다면 어떻게 될까.
+Primary Key는 한 번만 들어갈 수 있으므로 같은 아이디를 가진 사람은 물건을 한번 구매한 이후에는, 두 번 다시 쇼핑몰에서 물건을 살 수가 없다.
+한 명의 회원이 당연히 여러 건의 구매를 할 수 있도록 설정되어야 한다.
+
+이러한 설정이 바로 1대다 관계의 설정인 것이다.
+
+#### 7.2.1 INNER JOIN(내부 조인)
+
+* 조인 중에서 가장 많이 사용되는 조인. 일반적으로 JOIN이라고 얘기하는 것이 INNER JOIN을 지칭하는 것.
+
+```mysql
+USE sqldb;
+
+SELECT *
+FROM buytbl INNER JOIN usertbl 
+    ON buytbl.userID = usertbl.userID
+WHERE buytbl.userID = 'JYP';
+
+# WHERE을 쓰지 않을 경우
+SELECT *
+FROM buytbl INNER JOIN usertbl
+	ON buytbl.userID = usertbl.userID
+ORDER BY num;
+
+SELECT buytbl.userID, name, prodName, addr, CONCAT(mobile1, mobile2) AS '연락처'
+FROM buytbl INNER JOIN usertbl
+	ON buytbl.userID = usertbl.userID
+ORDER BY num;
+
+# 각 테이블에 별칭 주기
+SELECT B.userID, U.name, B.prodName, U.addr, CONCAT(U.mobile1, U.mobile2) AS '연락처'
+FROM buytbl B INNER JOIN usertbl U
+	ON B.userID = U.userID
+WHERE B.userID = 'JYP'
+ORDER BY B.num;
+
+SELECT B.userID, U.name, B.prodName, U.addr, CONCAT(U.mobile1, U.mobile2) AS '연락처'
+FROM buytbl B INNER JOIN usertbl U
+	ON B.userID = U.userID
+ORDER BY U.userID;
+
+# DISTINCT
+SELECT DISTINCT U.userID, U.name, U.addr
+FROM usertbl U INNER JOIN buytbl B
+	ON U.userID = B.userID
+ORDER BY U.userID;
+
+# EXISTS
+SELECT U.userID, U.name, U.addr
+FROM usertbl U
+WHERE EXISTS (
+	SELECT *
+    FROM buytbl B
+    WHERE U.userID = B.userID );
+```
+
