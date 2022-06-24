@@ -435,5 +435,18 @@ SELECT SUBDATE('2025-01-01', INTERVAL 31 DAY), SUBDATE('2025-01-01', INTERVAL 1 
 
 * 현재 연, 월, 일 및 시, 분, 초 , 밀리초를 구함
 
+##### `DATE(), TIME()`
 
+* DATETIME 형식에서 연-월-일 및 시:분:초만 추출한다.
+
+  ```mysql
+  SELECT DATE(NOW()), TIME(NOW());
+  ```
+
+#### 시스템 정보 함수
+
+* `USER(), DATABASE()`:현재 사용자 및 현재 선택된 데이터베이스를 구한다.
+* `FOUND_ROWS()`: 바로 앞 `SELECT`문에서 조회된 행의 개수를 구한다.
+* `ROW_COUNT()`: 바로 앞의 `INSERT, UPDATE, DELETE`문에서 입력, 수정, 삭제된 행의 개수를 구한다.
+  `CREATE, DROP`문은 0을 반환하고, `SELECT`문은 -1을 반환한다.
 
