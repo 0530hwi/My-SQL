@@ -450,3 +450,86 @@ SELECT SUBDATE('2025-01-01', INTERVAL 31 DAY), SUBDATE('2025-01-01', INTERVAL 1 
 * `ROW_COUNT()`: 바로 앞의 `INSERT, UPDATE, DELETE`문에서 입력, 수정, 삭제된 행의 개수를 구한다.
   `CREATE, DROP`문은 0을 반환하고, `SELECT`문은 -1을 반환한다.
 
+#### 실습 
+
+```mysql
+# 실습 2
+
+-- Step 1.
+CREATE DATABASE moviedb;
+USE moviedb;
+
+CREATE TABLE movietbl (
+	movie_id		INT,
+    movie_title		VARCHAR(30),
+    movie_director	VARCHAR(20),
+    movie_star		VARCHAR(20),
+    movie_script	LONGTEXT,
+    movie_film		LONGBLOB
+) DEFAULT CHARSET = utf8mb4;
+
+-- Step 2.
+INSERT INTO movietbl VALUES(1, '쉰들러 러스트', '스필버그', '리암 니슨',
+	LOAD_FILE('/Users/choibyeonghwi/Desktop/HwiSQL/movies/Schindler.txt'),
+    LOAD_FILE('/Users/choibyeonghwi/Desktop/HwiSQL/movies/Schindler.mp4'));
+
+SELECT * FROM movietbl;
+
+-- Step 3.
+/* 
+영화 대본과 영화 동영상이 입력되지 않은 이유는 두 가지다.
+먼저 최대 패킷 크기(=최대 파일 크기)가 설정된 시스템 변수인 max_allowed_packet 값을 조회해보자.
+*/
+SHOW variables LIKE 'max_allowed_packet';
+/*
+파일을 업로드/다운로드할 폴더 경로를 별도로 허용해 줘야만 한다.
+시스템 변수인 secure_file_priv 값을 조회해보자. 이 경로도 수정해야 한다.
+*/
+SHOW variables LIKE 'secure_file_priv';
+```
+
+### 피벗의 구현
+
+* 피벗(Pivot)은 한 열에 포함된 여러 값을 출력하고, 이를 여러 열로 변환하여 테이블 반환 식을 회전하고, 필요하면 집계까지 수행하는 것을 말한다.
+
+#### 실습
+
+```mysql
+# 실습3. 간단한 피벗 테이블을 실습해보자.
+
+-- Step 1. 샘플 데이터 생성
+USE sqldb;
+CREATE TABLE pivotTest (
+	uName 	CHAR(3),
+    season 	CHAR(2),
+    amount	INT
+);
+
+-- Step 2. 데이터 입력
+INSERT INTO pivotTest VALUES
+	('김범수', '겨울', 10), ('윤종신', '여름', 15), ('김범수', '가을', 25), ('김범수', '봄', 3),
+    ('김범수', '봄', 37), ('윤종신', '겨울', 40), ('김범수', '여름', 14), ('김범수', '겨울', 22),
+    ('윤종신', '여름', 64);
+SELECT * FROM pivotTest;
+
+-- Step 3. 다양한 함수를 활용하자
+SELECT uName,
+	SUM(IF(season = '봄', amount, 0)) AS '봄',
+    SUM(IF(season = '여름', amount, 0)) AS '여름',
+    SUM(IF(season = '가을', amount, 0)) AS '가을',
+    SUM(IF(season = '겨울', amount, 0)) AS '겨울',
+    SUM(amount) AS '합계'
+FROM pivotTest
+GROUP BY uName;
+
+SELECT * FROM pivotTest;
+
+SELECT season,
+	SUM(IF(uName = '김범수', amount, 0)) AS '김범수',
+    SUM(IF(uName = '윤종신', amount, 0)) AS '윤종신',
+    SUM(amount) AS '합계'
+FROM pivotTest
+GROUP BY season
+ORDER BY season;
+```
+
